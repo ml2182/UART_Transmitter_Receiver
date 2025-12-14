@@ -1,0 +1,11 @@
+*.xpr
+*.log
+*.jou
+*.wcfg
+*.xml
+*.html
+*.sim/
+*.runs/
+*.cache/
+*.hw/
+*.ip_user_files/
