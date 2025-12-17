@@ -96,9 +96,10 @@ task check_output_bit (input [DATA_BITS -1: 0] transmitted);
         end
         index = index + 1;
         number_of_tests = number_of_tests + 1;
+        
             
     end
-    repeat(baud_divider/2) @(posedge clk);
+    repeat(3* baud_divider/2) @(posedge clk);
     
 endtask
             

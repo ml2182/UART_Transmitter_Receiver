@@ -81,7 +81,9 @@ always_ff @(posedge clk) begin
         current_state <= IDLE;
         transmitted_bit <= 1'b1;
         shift_register <= 0;
+        counter <= 0;
         bit_counter <= 0;
+        
     end else begin
         if (counter == baud_divider - 1) begin
             if (current_state ==  TRANSMISSION) begin
