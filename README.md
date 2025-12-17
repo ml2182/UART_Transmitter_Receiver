@@ -11,7 +11,9 @@ I learnt how to build a asynchronous serial communication interface from scratch
 
 ## Further Improvements
 Implementing FIFO buffer for sending and receiving data - In progress
+
 Implementing error detection
+
 More Rigorous TBs
 
 ## Folder structure
