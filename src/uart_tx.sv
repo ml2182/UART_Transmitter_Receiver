@@ -29,7 +29,8 @@ parameter DATA_BITS)
     input logic reset,
     input logic [DATA_BITS -1:0] data_to_transmit = 0,
     input logic request_to_send = 1'b0,
-    output logic transmitted_bit
+    output logic transmitted_bit,
+    output logic tx_busy
     );
 localparam int baud_divider = CLK_FREQUENCY/BAUD_RATE;    
 localparam int width_of_counter = $clog2(baud_divider);
@@ -83,6 +84,7 @@ always_ff @(posedge clk) begin
         shift_register <= 0;
         counter <= 0;
         bit_counter <= 0;
+        tx_busy <= 0;
         
     end else begin
         if (counter == baud_divider - 1) begin
@@ -90,8 +92,11 @@ always_ff @(posedge clk) begin
                 bit_counter <= bit_counter +1;
             end else if (current_state == START) begin
                 bit_counter <= 0;
+                tx_busy <= 1;
                 shift_register <= data_to_transmit;
-            end
+            
+            end else if (current_state == STOP)
+                tx_busy <=0;
                    
             current_state <= next_state;
             transmitted_bit <= next_output;
@@ -100,5 +105,7 @@ always_ff @(posedge clk) begin
         counter <= counter + 1;
     end
 end 
+
+
 endmodule
 
