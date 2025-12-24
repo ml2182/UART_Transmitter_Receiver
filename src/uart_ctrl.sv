@@ -22,7 +22,8 @@
 module uart_ctrl
 #(parameter CLK_FREQUENCY,
 parameter BAUD_RATE,
-parameter DATA_BITS)(
+parameter DATA_BITS,
+parameter MAX_ELEMENTS)(
     input logic clk,
     input logic reset,
     input logic [DATA_BITS-1:0] tx_data,
@@ -32,10 +33,9 @@ parameter DATA_BITS)(
     // DATA LINES 
     output logic tx_serial,
     input logic rx_serial
-    
-    
     );
     
+
 uart_tx
 #(.CLK_FREQUENCY(CLK_FREQUENCY),
  .BAUD_RATE(BAUD_RATE),
@@ -44,7 +44,7 @@ uart_tx
             .clk(clk),
             .reset(reset),
             .data_to_transmit(tx_data),
-            .request_to_send(tx_req),
+            .tx_req(tx_req),
             .transmitted_bit(tx_serial),
             .tx_busy(tx_busy));
 
@@ -59,4 +59,5 @@ uart_rx
     .processed_data(rx_data));
 assign tx_req = tx_start & ~tx_busy; 
 
+        
 endmodule
