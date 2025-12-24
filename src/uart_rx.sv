@@ -8,7 +8,8 @@ parameter DATA_BITS)
     input logic clk,
     input logic reset,
     input logic received_bit,
-    output logic [DATA_BITS-1:0] processed_data
+    output logic [DATA_BITS-1:0] processed_data,
+    output logic processed_data_flag
     );
 localparam int baud_divider = CLK_FREQUENCY/BAUD_RATE;    
 localparam int width_of_counter = $clog2(baud_divider);
@@ -47,6 +48,7 @@ always_comb begin
 end
 
 localparam int num_samples = 5;
+localparam int width_of_samples = $clog2(num_samples+ 1);
 logic [num_samples -1:0] samples =0; 
 logic [DATA_BITS-1:0] processing_data = 0;
 always_ff @(posedge clk) begin
@@ -56,6 +58,7 @@ always_ff @(posedge clk) begin
         samples <= 0;
         oversampling_counter <= 0;
         processing_data <= 0;
+        processed_data <=0;
     end else begin
         if ((oversampling_counter == ((baud_divider/5)-1))&&(current_state == RECEIVING)) begin
             samples  <= {samples[num_samples -2:0],received_bit};
@@ -64,7 +67,7 @@ always_ff @(posedge clk) begin
         if (counter == baud_divider -1) begin
             if (current_state == RECEIVING) begin
                 bit_counter <= bit_counter +1;
-                processing_data <= {samples[(num_samples)/2], processing_data[DATA_BITS-1:1]};
+                processing_data <= {samples[(num_samples-1)/2], processing_data[DATA_BITS-1:1]};
                 
                 
             end else if (current_state == IDLE) begin
@@ -80,10 +83,15 @@ always_ff @(posedge clk) begin
             end
             current_state <= next_state;
             counter <=0;
-        end else begin
+        end else if (current_state == RECEIVING) begin
             counter <= counter +1;
             oversampling_counter <= oversampling_counter +1;
-        end
+        end 
+     if (current_state == STOP) begin
+        processed_data_flag <= 1;
+     end else 
+        processed_data_flag <= 0;
+        
     end
 end
 endmodule

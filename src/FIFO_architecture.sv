@@ -1,24 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 17.12.2025 13:50:28
-// Design Name: 
-// Module Name: FIFO_architecture
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-// enqueue, dequeue, isEmpty, isFull
 
 module FIFO_architecture
 #(parameter MAX_ELEMENTS,
@@ -30,7 +10,6 @@ parameter DATA_BITS
     input logic req_enqueue,
     input logic req_dequeue,
     output logic [DATA_BITS - 1:0] dequeue,
-    output logic dequeuing_flag,
     output logic isEmpty,
     output logic isFull
     );
@@ -44,9 +23,9 @@ logic [width_of_register-1:0] rear_pointer = 0;
 always_comb begin
     isFull = (num_of_elements == MAX_ELEMENTS);
     isEmpty = (num_of_elements == 0);
-
-     
 end
+
+
 int i;
 always_ff @(posedge clk) begin
     if (reset == 1) begin
@@ -68,7 +47,6 @@ always_ff @(posedge clk) begin
            end                 
         end
         if (req_dequeue == 1'b1) begin
-            dequeuing_flag <= 1;
             if (!isEmpty) begin
                 dequeue <= queue[front_pointer];
                 num_of_elements <= num_of_elements -1;
@@ -77,12 +55,7 @@ always_ff @(posedge clk) begin
                 else if (req_enqueue == 1'b0)
                     front_pointer <= front_pointer + 1;
             end
-        end else
-            dequeuing_flag <= 0;
-        
-            
-            
-            
+        end      
     end
 end
            

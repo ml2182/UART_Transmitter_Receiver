@@ -1,24 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 14.12.2025 14:17:19
-// Design Name: 
-// Module Name: uart_tx
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module uart_tx
 #(parameter CLK_FREQUENCY,
@@ -27,8 +7,8 @@ parameter DATA_BITS)
 (
     input logic clk,
     input logic reset,
-    input logic [DATA_BITS -1:0] data_to_transmit = 0,
-    input logic request_to_send = 1'b0,
+    input logic [DATA_BITS -1:0] data_to_transmit,
+    input logic request_to_send,
     output logic transmitted_bit,
     output logic tx_busy
     );
@@ -51,7 +31,7 @@ logic [bit_counter_width-1:0]  bit_counter = 0;
 always_comb begin
     unique case (current_state)
         IDLE: begin
-            if (request_to_send == 0) begin
+            if (request_to_send == 1'b0) begin
                 next_state = IDLE;
                 next_output = 1'b1;
             end else begin

@@ -1,41 +1,43 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 14.12.2025 14:17:19
-// Design Name: 
-// Module Name: uart_ctrl
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 module uart_ctrl
 #(parameter CLK_FREQUENCY,
 parameter BAUD_RATE,
 parameter DATA_BITS,
 parameter MAX_ELEMENTS)(
+
     input logic clk,
     input logic reset,
-    input logic [DATA_BITS-1:0] tx_data,
-    output logic [DATA_BITS-1:0] rx_data,
-    input logic tx_start,
+    
+    input logic [DATA_BITS - 1: 0] input_data,
+    input logic request_to_send,
+    output logic [DATA_BITS -1:0] output_data,
     output logic tx_busy,
     // DATA LINES 
     output logic tx_serial,
     input logic rx_serial
     );
-    
-
+logic tx_req;
+assign tx_req  = ~input_buffer_isEmpty & ~tx_busy; 
+logic [DATA_BITS-1:0] tx_data;
+logic [DATA_BITS-1:0] rx_data;
+logic input_buffer_isEmpty;
+logic input_buffer_isFull;
+logic input_buffer_enqueue;   
+FIFO_architecture
+#(.MAX_ELEMENTS(MAX_ELEMENTS),
+  .DATA_BITS(DATA_BITS)
+)input_buffer(
+            .clk(clk),
+            .reset(reset),
+            .enqueue(input_data),
+            .req_enqueue(input_buffer_enqueue),
+            .req_dequeue(tx_req),
+            .dequeue(tx_data),
+            .isEmpty(input_buffer_isEmpty),
+            .isFull(input_buffer_isFull)
+            );
+           
 uart_tx
 #(.CLK_FREQUENCY(CLK_FREQUENCY),
  .BAUD_RATE(BAUD_RATE),
@@ -44,10 +46,25 @@ uart_tx
             .clk(clk),
             .reset(reset),
             .data_to_transmit(tx_data),
-            .tx_req(tx_req),
+            .request_to_send(tx_req),
             .transmitted_bit(tx_serial),
             .tx_busy(tx_busy));
-
+assign input_buffer_enqueue = request_to_send & ~input_buffer_isFull;
+logic output_buffer_dequeue;
+FIFO_architecture
+#(.MAX_ELEMENTS(MAX_ELEMENTS),
+  .DATA_BITS(DATA_BITS)
+)output_buffer(
+            .clk(clk),
+            .reset(reset),
+            .enqueue(rx_data),
+            .req_enqueue(rx_ready),
+            .req_dequeue(output_buffer_dequeue),
+            .dequeue(output_data),
+            .isEmpty(output_buffer_isEmpty),
+            .isFull(output_buffer_isFull)
+            );
+           
 uart_rx
 #(.CLK_FREQUENCY(CLK_FREQUENCY),
 .BAUD_RATE(BAUD_RATE),
@@ -56,8 +73,10 @@ uart_rx
     .clk(clk),
     .reset(reset),
     .received_bit(rx_serial),
-    .processed_data(rx_data));
-assign tx_req = tx_start & ~tx_busy; 
+    .processed_data(rx_data),
+    .processed_data_flag(rx_ready));
+assign output_buffer_dequeue = ~output_buffer_isEmpty;
+
 
         
 endmodule
