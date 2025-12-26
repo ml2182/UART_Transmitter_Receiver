@@ -39,20 +39,20 @@ uart_ctrl
         .tx_busy(tx1_busy),
         .tx_serial(tx1_rx2),
         .rx_serial(tx2_rx1));
-uart_ctrl
-#(.CLK_FREQUENCY(CLK_FREQUENCY_2),
-  .BAUD_RATE(BAUD_RATE),
-  .DATA_BITS(DATA_BITS),
-  .MAX_ELEMENTS(MAX_ELEMENTS)
-)uut2(
-        .clk(clk2),
-        .reset(reset2),
-        .input_data(input_data_2),
-        .request_to_send(rts_2),
-        .output_data(output_data_2),
-        .tx_busy(tx2_busy),
-        .tx_serial(tx2_rx1),
-        .rx_serial(tx1_rx2));
+//uart_ctrl
+//#(.CLK_FREQUENCY(CLK_FREQUENCY_2),
+//  .BAUD_RATE(BAUD_RATE),
+//  .DATA_BITS(DATA_BITS),
+//  .MAX_ELEMENTS(MAX_ELEMENTS)
+//)uut2(
+//        .clk(clk2),
+//        .reset(reset2),
+//        .input_data(input_data_2),
+//        .request_to_send(rts_2),
+//        .output_data(output_data_2),
+//        .tx_busy(tx2_busy),
+//        .tx_serial(tx2_rx1),
+//        .rx_serial(tx1_rx2));
 logic [DATA_BITS-1:0] data_sent_1 [MAX_ELEMENTS-1];
 localparam int width_of_register = $clog2(MAX_ELEMENTS+1);
 logic [width_of_register-1:0] num_of_elements_1 =0;
@@ -78,22 +78,22 @@ initial begin
         @(posedge clk1);
     end
 end
-always begin
-    #10.101 clk2 = ~clk2; //49.5 MHz → 20.202 ns
-end
-initial begin
-    clk2 = 0;
-    reset2 = 1;
-    input_data_2 = 0;
-    rts_2 = 0;
-    repeat(1) @(posedge clk2);
-    reset2 = 0;
-end
-always @(posedge clk2) begin
-    if (num_of_elements_1 > 0) begin
-        check_received_data1;
-    end
-end
+//always begin
+//    #10.101 clk2 = ~clk2; //49.5 MHz → 20.202 ns
+//end
+//initial begin
+//    clk2 = 0;
+//    reset2 = 1;
+//    input_data_2 = 0;
+//    rts_2 = 0;
+//    repeat(1) @(posedge clk2);
+//    reset2 = 0;
+//end
+//always @(posedge clk2) begin
+//    if (num_of_elements_1 > 0) begin
+//        check_received_data1;
+//    end
+//end
 localparam int baud_divider_1 = CLK_FREQUENCY_1/BAUD_RATE;  
 localparam int baud_divider_2 = CLK_FREQUENCY_2/BAUD_RATE;  
 task check_received_data1;

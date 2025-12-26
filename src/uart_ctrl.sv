@@ -17,13 +17,14 @@ parameter MAX_ELEMENTS)(
     output logic tx_serial,
     input logic rx_serial
     );
-logic tx_req;
-assign tx_req  = ~input_buffer_isEmpty & ~tx_busy; 
+
+
 logic [DATA_BITS-1:0] tx_data;
 logic [DATA_BITS-1:0] rx_data;
 logic input_buffer_isEmpty;
 logic input_buffer_isFull;
-logic input_buffer_enqueue;   
+logic input_buffer_enqueue;  
+
 FIFO_architecture
 #(.MAX_ELEMENTS(MAX_ELEMENTS),
   .DATA_BITS(DATA_BITS)
@@ -32,7 +33,7 @@ FIFO_architecture
             .reset(reset),
             .enqueue(input_data),
             .req_enqueue(input_buffer_enqueue),
-            .req_dequeue(tx_req),
+            .req_dequeue(tx_accept),
             .dequeue(tx_data),
             .isEmpty(input_buffer_isEmpty),
             .isFull(input_buffer_isFull)
@@ -48,9 +49,15 @@ uart_tx
             .data_to_transmit(tx_data),
             .request_to_send(tx_req),
             .transmitted_bit(tx_serial),
-            .tx_busy(tx_busy));
+            .tx_busy(tx_busy),
+            .tx_accept(tx_accept));
+
 assign input_buffer_enqueue = request_to_send & ~input_buffer_isFull;
+assign tx_req  = ~input_buffer_isEmpty & ~tx_busy;  
+
 logic output_buffer_dequeue;
+assign output_buffer_dequeue = ~output_buffer_isEmpty;
+
 FIFO_architecture
 #(.MAX_ELEMENTS(MAX_ELEMENTS),
   .DATA_BITS(DATA_BITS)
@@ -75,7 +82,7 @@ uart_rx
     .received_bit(rx_serial),
     .processed_data(rx_data),
     .processed_data_flag(rx_ready));
-assign output_buffer_dequeue = ~output_buffer_isEmpty;
+
 
 
         
