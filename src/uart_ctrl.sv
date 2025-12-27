@@ -33,10 +33,11 @@ FIFO_architecture
             .reset(reset),
             .enqueue(input_data),
             .req_enqueue(input_buffer_enqueue),
-            .req_dequeue(tx_accept),
+            .req_dequeue(input_buffer_dequeue),
             .dequeue(tx_data),
             .isEmpty(input_buffer_isEmpty),
-            .isFull(input_buffer_isFull)
+            .isFull(input_buffer_isFull),
+            .dequeue_valid(input_buffer_dequeue_valid)
             );
            
 uart_tx
@@ -49,12 +50,12 @@ uart_tx
             .data_to_transmit(tx_data),
             .request_to_send(tx_req),
             .transmitted_bit(tx_serial),
-            .tx_busy(tx_busy),
-            .tx_accept(tx_accept));
+            .tx_busy(tx_busy));
 
 assign input_buffer_enqueue = request_to_send & ~input_buffer_isFull;
-assign tx_req  = ~input_buffer_isEmpty & ~tx_busy;  
-
+assign tx_req = input_buffer_dequeue_valid;
+assign input_buffer_dequeue = !input_buffer_isEmpty && !tx_busy && !tx_req;
+ 
 logic output_buffer_dequeue;
 assign output_buffer_dequeue = ~output_buffer_isEmpty;
 
@@ -69,7 +70,8 @@ FIFO_architecture
             .req_dequeue(output_buffer_dequeue),
             .dequeue(output_data),
             .isEmpty(output_buffer_isEmpty),
-            .isFull(output_buffer_isFull)
+            .isFull(output_buffer_isFull),
+            .dequeue_valid(output_buffer_dequeue_flag)
             );
            
 uart_rx

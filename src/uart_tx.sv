@@ -10,8 +10,7 @@ parameter DATA_BITS)
     input logic [DATA_BITS -1:0] data_to_transmit,
     input logic request_to_send,
     output logic transmitted_bit,
-    output logic tx_busy,
-    output logic tx_accept
+    output logic tx_busy
     );
 localparam int baud_divider = CLK_FREQUENCY/BAUD_RATE;    
 localparam int width_of_counter = $clog2(baud_divider +1);
@@ -27,7 +26,7 @@ localparam int bit_counter_width = $clog2(DATA_BITS +1);
 logic [bit_counter_width-1:0]  bit_counter = 0;
 
 logic pending;
-logic [DATA_BITS -1 : 0] pending_data;              
+logic [DATA_BITS -1 : 0] pending_data = 0;              
 
 always_ff @(posedge clk) begin
     if (reset == 1) begin
@@ -37,20 +36,22 @@ always_ff @(posedge clk) begin
         counter <= 0;
         bit_counter <= 0;
         tx_busy <= 0;
-        tx_accept <=0;
         pending <= 0;
+        pending_data <= '0;
+
     end else begin
-        tx_accept <= 0;
-        if (current_state == IDLE && !pending && request_to_send) begin
-            tx_accept    <= 1;                  // single-cycle pulse
-            pending      <= 1;
-            pending_data <= data_to_transmit;   // latch immediately
+        if (request_to_send) begin
+            pending <= 1;
+            pending_data <= data_to_transmit;
+            tx_busy <= 1;
         end
+            
         if (counter == baud_divider - 1) begin
             counter <= 0;
             unique case (current_state)
                 IDLE: begin
                     transmitted_bit <= 1'b1;
+                    
                     tx_busy <=0;
                     bit_counter <= 0;
 
@@ -80,7 +81,7 @@ always_ff @(posedge clk) begin
                 end STOP: begin
                     transmitted_bit <= 1'b1;
                     current_state <= IDLE;
-                    tx_busy <= 1;
+                    tx_busy <= 0;
                     bit_counter <= 0;
                 end
             endcase
