@@ -5,7 +5,7 @@ parameter int CLK_FREQUENCY_1 = 50_000_000;
 parameter int CLK_FREQUENCY_2 = 49_500_000;
 parameter int BAUD_RATE = 115_200; 
 parameter int DATA_BITS = 7;
-parameter int MAX_ELEMENTS = 10;
+parameter int MAX_ELEMENTS = 50;
 
 logic clk1;
 logic reset1;
@@ -38,21 +38,25 @@ uart_ctrl
         .output_data(output_data_1),
         .tx_busy(tx1_busy),
         .tx_serial(tx1_rx2),
-        .rx_serial(tx2_rx1));
-//uart_ctrl
-//#(.CLK_FREQUENCY(CLK_FREQUENCY_2),
-//  .BAUD_RATE(BAUD_RATE),
-//  .DATA_BITS(DATA_BITS),
-//  .MAX_ELEMENTS(MAX_ELEMENTS)
-//)uut2(
-//        .clk(clk2),
-//        .reset(reset2),
-//        .input_data(input_data_2),
-//        .request_to_send(rts_2),
-//        .output_data(output_data_2),
-//        .tx_busy(tx2_busy),
-//        .tx_serial(tx2_rx1),
-//        .rx_serial(tx1_rx2));
+        .rx_serial(tx2_rx1),
+        .output_buffer_dequeue_flag(uut1_received));
+uart_ctrl
+#(.CLK_FREQUENCY(CLK_FREQUENCY_2),
+  .BAUD_RATE(BAUD_RATE),
+  .DATA_BITS(DATA_BITS),
+  .MAX_ELEMENTS(MAX_ELEMENTS)
+)uut2(
+        .clk(clk2),
+        .reset(reset2),
+        .input_data(input_data_2),
+        .request_to_send(rts_2),
+        .output_data(output_data_2),
+        .tx_busy(tx2_busy),
+        .tx_serial(tx2_rx1),
+        .rx_serial(tx1_rx2),
+        .output_buffer_dequeue_flag(uut2_received));
+logic uut2_received;
+logic uut1_received;
 logic [DATA_BITS-1:0] data_sent_1 [MAX_ELEMENTS-1];
 localparam int width_of_register = $clog2(MAX_ELEMENTS+1);
 logic [width_of_register-1:0] num_of_elements_1 =0;
@@ -67,7 +71,7 @@ initial begin
     repeat (3) @(posedge clk1);
     reset1 = 0;
     
-    repeat (5) begin
+    repeat (MAX_ELEMENTS) begin
         input_data_1 = $urandom_range(0,(1<<DATA_BITS)-1);
         rts_1 = 1;
         data_sent_1[rear_pointer_1] = input_data_1; 
@@ -78,39 +82,41 @@ initial begin
         @(posedge clk1);
     end
 end
-//always begin
-//    #10.101 clk2 = ~clk2; //49.5 MHz → 20.202 ns
-//end
-//initial begin
-//    clk2 = 0;
-//    reset2 = 1;
-//    input_data_2 = 0;
-//    rts_2 = 0;
-//    repeat(1) @(posedge clk2);
-//    reset2 = 0;
-//end
-//always @(posedge clk2) begin
-//    if (num_of_elements_1 > 0) begin
-//        check_received_data1;
-//    end
-//end
+always begin
+    #10.101 clk2 = ~clk2; //49.5 MHz → 20.202 ns
+end
+initial begin
+    clk2 = 0;
+    reset2 = 1;
+    input_data_2 = 0;
+    rts_2 = 0;
+    repeat(2) @(posedge clk2);
+    reset2 = 0;
+    
+end
+always @(posedge clk2) begin
+check_received_data1;
+end
+int number_of_tests;
+int number_of_pass_tests;
 localparam int baud_divider_1 = CLK_FREQUENCY_1/BAUD_RATE;  
 localparam int baud_divider_2 = CLK_FREQUENCY_2/BAUD_RATE;  
 task check_received_data1;
-    $display("DATA TO TRANSMIT: %b",data_sent_1[front_pointer_1]);
- //   number_of_pass_tests = 0;
-   // number_of_tests = 0;
-    repeat(baud_divider_2) @(posedge clk2);
-    repeat(baud_divider_2*(DATA_BITS -1)) @(posedge clk2);                
-    if (data_sent_1[front_pointer_1] === output_data_2) begin
-        $display("PASS: at %0t, value=%b", $time, data_sent_1[front_pointer_1]);
-        //number_of_pass_tests = number_of_pass_tests +1;
-    end else
-        $display("FAIL: at %0t, expected=%b got=%b", $time, data_sent_1[front_pointer_1], output_data_2);
-    front_pointer_1 = front_pointer_1 + 1;
-    num_of_elements_1 = num_of_elements_1 -1;
- //   number_of_tests = number_of_tests +1;
-    
+    number_of_pass_tests = 0;
+    number_of_tests = 0;
+    if (num_of_elements_1 > 0) begin
+        if (uut2_received) begin
+            $display("DATA TO TRANSMIT: %b",data_sent_1[front_pointer_1]);              
+            if (data_sent_1[front_pointer_1] === output_data_2) begin
+                $display("PASS: at %0t, value=%b", $time, data_sent_1[front_pointer_1]);
+                number_of_pass_tests = number_of_pass_tests +1;
+            end else
+                $display("FAIL: at %0t, expected=%b got=%b", $time, data_sent_1[front_pointer_1], output_data_2);
+            front_pointer_1 = front_pointer_1 + 1;
+            num_of_elements_1 = num_of_elements_1 -1;
+            number_of_tests = number_of_tests +1;            
+        end
+     end
 endtask
 
 endmodule

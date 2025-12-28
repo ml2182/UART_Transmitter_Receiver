@@ -15,9 +15,9 @@ parameter DATA_BITS
     output logic dequeue_valid
     );
 
-localparam int width_of_register = $clog2(MAX_ELEMENTS+1);
+localparam int width_of_register = $clog2(MAX_ELEMENTS);
 logic [width_of_register-1:0] num_of_elements;
-logic [DATA_BITS-1:0] queue [MAX_ELEMENTS-1];
+logic [DATA_BITS-1:0] queue [0:MAX_ELEMENTS-1];
 logic [width_of_register-1:0] front_pointer = 0;
 logic [width_of_register-1:0] rear_pointer = 0;
 
@@ -74,6 +74,11 @@ always_ff @(posedge clk) begin
             else
                 front_pointer <= front_pointer + 1;
         end
+        2'b00: begin
+            num_of_elements <= num_of_elements;
+            rear_pointer <= rear_pointer;
+            front_pointer <= front_pointer;
+        end 
         endcase
     end   
 end
