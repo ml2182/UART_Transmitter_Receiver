@@ -22,7 +22,7 @@ I gained experience in:
 - Building modular testbenches and using waveform analysis to verify HDL designs .
 
 ## Further Improvements
-Implementing error detection (Parity Bit). I would have to add another state at TX which transmits a odd/even parity bit, depending on the data transmitted. The RX would calculate the number of 1s received in the byte of data. If it follows the protocol agreed upon, it would accept/reject the byte of data. This feature is not yet implemented due to time constraints.
+Implementing error detection (Parity Bit). I would have to add another state at TX which transmits a odd/even parity bit, depending on the data transmitted. The RX would calculate the number of 1s received in the byte of data. If it follows the protocol agreed upon, it would accept/reject the byte of data. Also, I can further implement framing error detection and advance flow control for higher reliability. These features are not yet implemented due to time constraints.
 
 ## Folder Structure
 - `src/` — HDL source files
