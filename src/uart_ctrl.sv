@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 
 module uart_ctrl
-#(parameter CLK_FREQUENCY,
-parameter BAUD_RATE,
-parameter DATA_BITS,
-parameter MAX_ELEMENTS)(
+#(parameter CLK_FREQUENCY = 100_000_000,
+parameter BAUD_RATE = 115_200,
+parameter DATA_BITS =  7,
+parameter MAX_ELEMENTS = 20)(
 
     input logic clk,
     input logic reset,

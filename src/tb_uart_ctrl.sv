@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
 
 module tb_uart_ctrl;
-parameter int CLK_FREQUENCY_1 = 50_000_000;
+parameter int CLK_FREQUENCY_1 = 100_000_000;//when testing
 parameter int CLK_FREQUENCY_2 = 49_500_000;
 parameter int BAUD_RATE = 115_200; 
 parameter int DATA_BITS = 7;
-parameter int MAX_ELEMENTS = 50;
+parameter int MAX_ELEMENTS = 20;
 
 logic clk1;
 logic reset1;
@@ -23,7 +23,7 @@ logic [DATA_BITS-1:0] output_data_1;
 logic [DATA_BITS-1:0] output_data_2;
 
 always begin 
-    #10 clk1 = ~clk1;
+    #5 clk1 = ~clk1;
 end
 uart_ctrl
 #(.CLK_FREQUENCY(CLK_FREQUENCY_1),
